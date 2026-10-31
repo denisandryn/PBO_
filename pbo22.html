@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen User - OOP & CRUD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --warning: #f59e0b;
+            --warning-hover: #d97706;
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 440px;
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .container.wide {
+            max-width: 820px;
+        }
+
+        .container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: #fff;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        input:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        .btn-primary { background-color: var(--primary); color: white; flex: 1; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-success:hover { background-color: var(--success-hover); }
+
+        .btn-warning { background-color: var(--warning); color: white; }
+        .btn-warning:hover { background-color: var(--warning-hover); }
+
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+
+        .btn-secondary { background-color: #64748b; color: white; }
+        .btn-secondary:hover { background-color: #475569; }
+
+        .demo-box {
+            background: #e0e7ff;
+            color: #312e81;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 20px;
+            border-left: 4px solid var(--primary);
+            line-height: 1.5;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .badge-admin { background: #d1fae5; color: #065f46; }
+        .badge-user { background: #dbeafe; color: #1e40af; }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <!-- ================= 1. FORM LOGIN ================= -->
+    <div id="loginForm" class="container active">
+        <h2>🔒 Sistem Login OOP</h2>
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="loginUser" placeholder="Masukkan username">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPass" placeholder="Masukkan password">
+        </div>
+        <div class="btn-group">
+            <button class="btn-primary" onclick="AuthManager.login()">Masuk Sistem</button>
+        </div>
+        
+        <div class="demo-box">
+            <b>🔑 Akun Demo:</b><br>
+            • Admin: <code>admin</code> / <code>admin123</code><br>
+            • User: <code>user1</code> / <code>user123</code>
+        </div>
+    </div>
+
+    <!-- ================= 2. FORM PROFILE ================= -->
+    <div id="profileForm" class="container">
+        <h2>👤 Profil Pengguna</h2>
+        <div class="form-group">
+            <label>Hak Akses (Role)</label>
+            <div style="margin-top: 4px;"><span id="profileRoleBadge" class="role-badge">-</span></div>
+        </div>
+        <div class="form-group">
+            <label>Username (Primary Key)</label>
+            <input type="text" id="profileUsername" disabled>
+        </div>
+        <div class="form-group">
+            <label>Nama Lengkap</label>
+            <input type="text" id="profileFullName">
+        </div>
+        <div class="form-group">
+            <label>Password Baru</label>
+            <input type="password" id="profilePassword">
+        </div>
+        <div class="btn-group">
+            <button class="btn-primary" onclick="ProfileManager.save()">Simpan</button>
+            <button id="btnNavTable" class="btn-success" style="display:none;" onclick="AppRouter.showTable()">Dashboard Admin</button>
+            <button class="btn-danger" onclick="AuthManager.logout()">Keluar</button>
+        </div>
+    </div>
+
+    <!-- ================= 3. FORM TABLE USER (CRUD ADMIN) ================= -->
+    <div id="tableForm" class="container wide">
+        <h2>⚙️ Kelola Data User (Admin CRUD)</h2>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label>Username</label>
+                <input type="text" id="crudUsername" placeholder="Username unik">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label>Password</label>
+                <input type="text" id="crudPassword" placeholder="Password akun">
+            </div>
+        </div>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label>Nama Lengkap</label>
+                <input type="text" id="crudFullName" placeholder="Nama lengkap">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label>Role</label>
+                <select id="crudRole">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-success" onclick="CrudManager.add()">Tambah</button>
+            <button class="btn-warning" onclick="CrudManager.update()">Update</button>
+            <button class="btn-danger" onclick="CrudManager.remove()">Hapus</button>
+            <button class="btn-secondary" onclick="CrudManager.clear()">Reset</button>
+            <button class="btn-primary" onclick="AppRouter.showProfile()">Profil Saya</button>
+            <button class="btn-danger" style="margin-left: auto;" onclick="AuthManager.logout()">Keluar</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Nama Lengkap</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- Data injected via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT: OOP & STORAGE ================= -->
+    <script>
+        // --- 1. ENKAPSULASI & PEWARISAN (INHERITANCE) ---
+        class User {
+            constructor(username, password, fullName, role = "user") {
+                this.username = username;
+                this.password = password;
+                this.fullName = fullName;
+                this.role = role;
+            }
+
+            toJSON() {
+                return {
+                    username: this.username,
+                    password: this.password,
+                    fullName: this.fullName,
+                    role: this.role
+                };
+            }
+        }
+
+        class AdminUser extends User {
+            constructor(username, password, fullName) {
+                super(username, password, fullName, "admin");
+            }
+        }
+
+        class RegularUser extends User {
+            constructor(username, password, fullName) {
+                super(username, password, fullName, "user");
+            }
+        }
+
+        // --- 2. LOCAL DATA STORAGE MANAGER ---
+        class StorageManager {
+            static STORAGE_KEY = "oop_crud_users_db_v2";
+
+            static init() {
+                if (!localStorage.getItem(this.STORAGE_KEY)) {
+                    const defaultData = [
+                        new AdminUser("admin", "admin123", "Administrator Utama"),
+                        new RegularUser("user1", "user123", "Denis Endriyani")
+                    ];
+                    this.save(defaultData);
+                }
+            }
+
+            static getUsers() {
+                this.init();
+                const raw = JSON.parse(localStorage.getItem(this.STORAGE_KEY));
+                return raw.map(u => u.role === 'admin' ? new AdminUser(u.username, u.password, u.fullName) : new RegularUser(u.username, u.password, u.fullName));
+            }
+
+            static save(users) {
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(users.map(u => u.toJSON())));
+            }
+        }
+
+        let currentUser = null;
+
+        // --- 3. ROUTER / NAVIGASI FORM ---
+        class AppRouter {
+            static showForm(formId) {
+                document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+                document.getElementById(formId).classList.add('active');
+            }
+
+            static showLogin() {
+                currentUser = null;
+                this.showForm('loginForm');
+            }
+
+            static showProfile() {
+                document.getElementById('profileUsername').value = currentUser.username;
+                document.getElementById('profileFullName').value = currentUser.fullName;
+                document.getElementById('profilePassword').value = currentUser.password;
+                
+                const badge = document.getElementById('profileRoleBadge');
+                badge.innerText = currentUser.role.toUpperCase();
+                badge.className = `role-badge badge-${currentUser.role}`;
+
+                const btnNav = document.getElementById('btnNavTable');
+                btnNav.style.display = currentUser.role === 'admin' ? 'inline-flex' : 'none';
+
+                this.showForm('profileForm');
+            }
+
+            static showTable() {
+                if (currentUser.role !== 'admin') {
+                    alert("Akses ditolak! Halaman ini khusus admin.");
+                    return;
+                }
+                CrudManager.loadTable();
+                this.showForm('tableForm');
+            }
+        }
+
+        // --- 4. AUTHENTICATION MANAGER ---
+        class AuthManager {
+            static login() {
+                const uInput = document.getElementById('loginUser').value.trim();
+                const pInput = document.getElementById('loginPass').value.trim();
+
+                const users = StorageManager.getUsers();
+                const found = users.find(u => u.username === uInput && u.password === pInput);
+
+                if (found) {
+                    currentUser = found;
+                    document.getElementById('loginUser').value = '';
+                    document.getElementById('loginPass').value = '';
+                    
+                    if (currentUser.role === 'admin') {
+                        AppRouter.showTable();
+                    } else {
+                        AppRouter.showProfile();
+                    }
+                } else {
+                    alert("Username atau Password salah!");
+                }
+            }
+
+            static logout() {
+                AppRouter.showLogin();
+            }
+        }
+
+        // --- 5. PROFILE MANAGER ---
+        class ProfileManager {
+            static save() {
+                const newName = document.getElementById('profileFullName').value.trim();
+                const newPass = document.getElementById('profilePassword').value.trim();
+
+                if (!newName || !newPass) {
+                    alert("Nama dan Password tidak boleh kosong!");
+                    return;
+                }
+
+                let users = StorageManager.getUsers();
+                users = users.map(u => {
+                    if (u.username === currentUser.username) {
+                        u.fullName = newName;
+                        u.password = newPass;
+                        currentUser = u;
+                    }
+                    return u;
+                });
+
+                StorageManager.save(users);
+                alert("Profil berhasil diperbarui!");
+            }
+        }
+
+        // --- 6. CRUD MANAGER (ADMIN DASHBOARD) ---
+        class CrudManager {
+            static loadTable() {
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '';
+                const users = StorageManager.getUsers();
+
+                users.forEach(u => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><b>${u.username}</b></td>
+                        <td>${u.fullName}</td>
+                        <td><span class="role-badge badge-${u.role}">${u.role.toUpperCase()}</span></td>
+                    `;
+                    row.onclick = () => this.selectRow(u);
+                    tbody.appendChild(row);
+                });
+            }
+
+            static selectRow(user) {
+                document.getElementById('crudUsername').value = user.username;
+                document.getElementById('crudUsername').disabled = true;
+                document.getElementById('crudPassword').value = user.password;
+                document.getElementById('crudFullName').value = user.fullName;
+                document.getElementById('crudRole').value = user.role;
+            }
+
+            static clear() {
+                document.getElementById('crudUsername').value = '';
+                document.getElementById('crudUsername').disabled = false;
+                document.getElementById('crudPassword').value = '';
+                document.getElementById('crudFullName').value = '';
+                document.getElementById('crudRole').value = 'user';
+            }
+
+            static add() {
+                const uname = document.getElementById('crudUsername').value.trim();
+                const pass = document.getElementById('crudPassword').value.trim();
+                const fname = document.getElementById('crudFullName').value.trim();
+                const role = document.getElementById('crudRole').value;
+
+                if (!uname || !pass || !fname) {
+                    alert("Semua field wajib diisi!");
+                    return;
+                }
+
+                let users = StorageManager.getUsers();
+                if (users.some(u => u.username === uname)) {
+                    alert("Username sudah terdaftar!");
+                    return;
+                }
+
+                const newUser = role === 'admin' ? new AdminUser(uname, pass, fname) : new RegularUser(uname, pass, fname);
+                users.push(newUser);
+                StorageManager.save(users);
+
+                this.loadTable();
+                this.clear();
+                alert("User berhasil ditambahkan!");
+            }
+
+            static update() {
+                const uname = document.getElementById('crudUsername').value.trim();
+                const pass = document.getElementById('crudPassword').value.trim();
+                const fname = document.getElementById('crudFullName').value.trim();
+                const role = document.getElementById('crudRole').value;
+
+                if (!document.getElementById('crudUsername').disabled) {
+                    alert("Pilih baris user dari tabel terlebih dahulu untuk di-update!");
+                    return;
+                }
+
+                let users = StorageManager.getUsers();
+                users = users.map(u => {
+                    if (u.username === uname) {
+                        u.password = pass;
+                        u.fullName = fname;
+                        u.role = role;
+                    }
+                    return u;
+                });
+
+                StorageManager.save(users);
+                this.loadTable();
+                this.clear();
+                alert("Data user berhasil diperbarui!");
+            }
+
+            static remove() {
+                const uname = document.getElementById('crudUsername').value.trim();
+                if (!document.getElementById('crudUsername').disabled) {
+                    alert("Pilih baris user dari tabel yang ingin dihapus!");
+                    return;
+                }
+
+                if (uname === currentUser.username) {
+                    alert("Tidak dapat menghapus akun yang sedang aktif digunakan!");
+                    return;
+                }
+
+                if (confirm(`Apakah Anda yakin ingin menghapus user ${uname}?`)) {
+                    let users = StorageManager.getUsers();
+                    users = users.filter(u => u.username !== uname);
+                    StorageManager.save(users);
+                    this.loadTable();
+                    this.clear();
+                    alert("User berhasil dihapus!");
+                }
+            }
+        }
+
+        // Inisialisasi Storage Saat Pertama Kali Dimuat
+        StorageManager.init();
+    </script>
+</body>
+</html>
